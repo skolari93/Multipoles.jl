@@ -1,24 +1,25 @@
 using Plots
-using CoordinateTransformations
+using FastTransforms
+
 include("sphericalHarmonics.jl")
 
 plotlyjs()
 
-ϕ = collect(range(0, 2 * π, length=100))
-θ = collect(range(0, π, length=100))
+l = 100
+ϕ = collect(range(0, 2 * π, length=l))
+θ = collect(range(0, π, length=l))
 
-n = 100
+n = 3
+m  = 2
 
-x = cos.(θ) * sin.(ϕ)';
-y = sin.(θ) * sin.(ϕ)';
-z = ones(n) * cos.(ϕ)';
-function Ycart(n::Int, m::Int, x, y, z) 
-    v = SphericalFromCartesian()([x, y, z])
-    return Y(n, m, v.θ, v.ϕ)
-end
-Yval = Ycart.(0, 0, x, y, z)
+Yvalues = transpose(sphevaluate.(θ, ϕ', n, m))
 
-surface(x,y,z, 
+x = abs.(Yvalues) .* (cos.(ϕ) * sin.(θ)')
+y = abs.(Yvalues) .* (sin.(ϕ) * sin.(θ)')
+z = abs.(Yvalues) .*  (ones(l) * cos.(θ)')
+
+surface(x,y,z,
+    title="n=$(n), m=$(m)",
     fill_z=Yval,
     framestyle=:none,
     axis=nothing
