@@ -1,5 +1,5 @@
 using Plots
-using FastTransforms
+using CoordinateTransformations
 
 include("sphericalHarmonics.jl")
 
@@ -9,18 +9,23 @@ l = 100
 ϕ = collect(range(0, 2 * π, length=l))
 θ = collect(range(0, π, length=l))
 
-n = 3
-m  = 2
+n = 2
+m  = 0
 
-Yvalues = transpose(sphevaluate.(θ, ϕ', n, m))
+sphVal = transpose(sphevaluate.(θ, ϕ', n, m))
 
-x = abs.(Yvalues) .* (cos.(ϕ) * sin.(θ)')
-y = abs.(Yvalues) .* (sin.(ϕ) * sin.(θ)')
-z = abs.(Yvalues) .*  (ones(l) * cos.(θ)')
+x = abs.(sphVal) .* (cos.(ϕ) * sin.(θ)')
+y = abs.(sphVal) .* (sin.(ϕ) * sin.(θ)')
+z = abs.(sphVal) .*  (ones(l) * cos.(θ)')
+
+function Ycart(n::Int, m::Int, x, y, z) 
+    v = SphericalFromCartesian()([x, y, z])
+    return sphevaluate.(v.θ, v.ϕ, n, m)
+end
 
 surface(x,y,z,
     title="n=$(n), m=$(m)",
-    fill_z=Yval,
+    fill_z=sphVal,
     framestyle=:none,
     axis=nothing
 )
